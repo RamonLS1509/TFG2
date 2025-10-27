@@ -1,64 +1,98 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Platform;
-
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+/**
+ * @OA\Tag(name="Platforms", description="Gestión de plataformas de videojuegos")
+ */
 class PlatformController extends Controller
 {
     /**
-     * GET /api/platforms
-     * RUTA PÚBLICA
+     * @OA\Get(
+     *     path="/api/platforms",
+     *     summary="Listar todas las plataformas",
+     *     tags={"Platforms"},
+     *     @OA\Response(response=200, description="Lista de plataformas", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Platform")))
+     * )
      */
     public function index()
     {
-        return response()->json(Platform::orderBy('name')->get(), 200);
+        return response()->json(Platform::all());
     }
 
     /**
-     * GET /api/platforms/{platform}
-     */
-    public function show(Platform $platform)
-    {
-        return response()->json($platform, 200);
-    }
-
-    /**
-     * POST /api/platforms
-     * SOLO ADMIN
+     * @OA\Post(
+     *     path="/api/platforms",
+     *     summary="Crear una nueva plataforma",
+     *     tags={"Platforms"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Platform")),
+     *     @OA\Response(response=201, description="Plataforma creada", @OA\JsonContent(ref="#/components/schemas/Platform"))
+     * )
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:platforms,name|max:100'
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
         ]);
 
-        $platform = Platform::create($request->only('name'));
+        $platform = Platform::create($validated);
         return response()->json($platform, 201);
     }
 
     /**
-     * PUT /api/platforms/{platform}
-     * SOLO ADMIN
+     * @OA\Get(
+     *     path="/api/platforms/{id}",
+     *     summary="Obtener detalles de una plataforma",
+     *     tags={"Platforms"},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Plataforma encontrada", @OA\JsonContent(ref="#/components/schemas/Platform")),
+     *     @OA\Response(response=404, description="No encontrada")
+     * )
      */
-    public function update(Request $request, Platform $platform)
+    public function show($id)
     {
-        $request->validate([
-            'name' => 'required|string|max:100|unique:platforms,name,' . $platform->id
-        ]);
-
-        $platform->update($request->only('name'));
-        return response()->json($platform, 200);
+        $platform = Platform::find($id);
+        return $platform ? response()->json($platform) : response()->json(['message' => 'Not found'], 404);
     }
 
     /**
-     * DELETE /api/platforms/{platform}
-     * SOLO ADMIN
+     * @OA\Put(
+     *     path="/api/platforms/{id}",
+     *     summary="Actualizar una plataforma",
+     *     tags={"Platforms"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Platform")),
+     *     @OA\Response(response=200, description="Plataforma actualizada", @OA\JsonContent(ref="#/components/schemas/Platform"))
+     * )
      */
-    public function destroy(Platform $platform)
+    public function update(Request $request, $id)
     {
+        $platform = Platform::find($id);
+        if (!$platform) return response()->json(['message' => 'Not found'], 404);
+        $platform->update($request->all());
+        return response()->json($platform);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/platforms/{id}",
+     *     summary="Eliminar una plataforma",
+     *     tags={"Platforms"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Eliminado correctamente")
+     * )
+     */
+    public function destroy($id)
+    {
+        $platform = Platform::find($id);
+        if (!$platform) return response()->json(['message' => 'Not found'], 404);
         $platform->delete();
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }

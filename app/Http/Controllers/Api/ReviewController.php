@@ -1,59 +1,125 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreReviewRequest;
-use Illuminate\Http\Request;
 use App\Models\Review;
-use App\Models\Game;
-
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+/**
+ * @OA\Tag(
+ *     name="Reviews",
+ *     description="Gestión de reseñas y valoraciones de videojuegos"
+ * )
+ */
 class ReviewController extends Controller
 {
-    // POST /api/games/{game}/reviews
-    public function store(StoreReviewRequest $request, Game $game)
+    /**
+     * @OA\Get(
+     *     path="/api/reviews",
+     *     summary="Listar todas las reseñas",
+     *     tags={"Reviews"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de reseñas",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Review"))
+     *     )
+     * )
+     */
+    public function index()
     {
-        $user = $request->user();
-        // ensure user hasn't already reviewed
-        if ($game->reviews()->where('user_id',$user->id)->exists()) {
-            return response()->json(['message'=>'Ya has reseñado este juego'], 409);
-        }
+        return response()->json(Review::all());
+    }
 
-        $review = $game->reviews()->create([
-            'user_id' => $user->id,
-            'rating' => $request->input('rating'),
-            'comment' => $request->input('comment')
+    /**
+     * @OA\Post(
+     *     path="/api/reviews",
+     *     summary="Crear una nueva reseña",
+     *     tags={"Reviews"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"user_id","game_id","rating","comment"},
+     *             @OA\Property(property="user_id", type="integer"),
+     *             @OA\Property(property="game_id", type="integer"),
+     *             @OA\Property(property="rating", type="integer", example=5),
+     *             @OA\Property(property="comment", type="string", example="Excelente juego con una historia impresionante.")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Reseña creada", @OA\JsonContent(ref="#/components/schemas/Review"))
+     * )
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'game_id' => 'required|integer|exists:games,id',
+            'rating' => 'required|integer|min:1|max:10',
+            'comment' => 'required|string|max:1000',
         ]);
 
-        // business logic: recalcular average_rating
-        $avg = $game->reviews()->avg('rating');
-        $game->average_rating = round($avg, 2);
-        $game->save();
-
-        return response()->json($review->load('user'), 201);
+        $review = Review::create($validated);
+        return response()->json($review, 201);
     }
 
-    // GET /api/games/{game}/reviews (public)
-    public function index(Game $game)
+    /**
+     * @OA\Get(
+     *     path="/api/reviews/{id}",
+     *     summary="Obtener una reseña por ID",
+     *     tags={"Reviews"},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Reseña encontrada", @OA\JsonContent(ref="#/components/schemas/Review")),
+     *     @OA\Response(response=404, description="No encontrada")
+     * )
+     */
+    public function show($id)
     {
-        $reviews = $game->reviews()->with('user')->paginate(10);
-        return response()->json($reviews, 200);
+        $review = Review::find($id);
+        return $review ? response()->json($review) : response()->json(['message' => 'Not found'], 404);
     }
 
-    // DELETE /api/reviews/{review} (auth: either owner or admin)
-    public function destroy(Request $request, Review $review)
+    /**
+     * @OA\Put(
+     *     path="/api/reviews/{id}",
+     *     summary="Actualizar una reseña",
+     *     tags={"Reviews"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="rating", type="integer", example=8),
+     *             @OA\Property(property="comment", type="string", example="Buena jugabilidad pero historia débil.")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Reseña actualizada", @OA\JsonContent(ref="#/components/schemas/Review"))
+     * )
+     */
+    public function update(Request $request, $id)
     {
-        $user = $request->user();
-        if ($user->id !== $review->user_id && !$user->hasRole('admin')) {
-            return response()->json(['message'=>'Forbidden'], 403);
-        }
-        $game = $review->game;
+        $review = Review::find($id);
+        if (!$review) return response()->json(['message' => 'Not found'], 404);
+
+        $review->update($request->only(['rating', 'comment']));
+        return response()->json($review);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/reviews/{id}",
+     *     summary="Eliminar una reseña",
+     *     tags={"Reviews"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Eliminada correctamente")
+     * )
+     */
+    public function destroy($id)
+    {
+        $review = Review::find($id);
+        if (!$review) return response()->json(['message' => 'Not found'], 404);
+
         $review->delete();
-
-        // recalcular rating
-        $avg = $game->reviews()->avg('rating') ?? 0;
-        $game->average_rating = round($avg,2);
-        $game->save();
-
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }

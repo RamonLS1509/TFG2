@@ -15,18 +15,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // roles
-        $adminRole = Role::firstOrCreate(['name'=>'admin'], ['label'=>'Administrador']);
-        $userRole = Role::firstOrCreate(['name'=>'user'], ['label'=>'Usuario']);
 
-        // admin user
-        $admin = User::firstOrCreate(['email'=>'admin@example.com'], [
-            'name'=>'Admin',
-            'password'=>Hash::make('secret123')
-        ]);
-        $admin->roles()->syncWithoutDetaching([$adminRole->id]);
-
-        // sample data
         $dev = Developer::firstOrCreate(['name'=>'SuperDev Studios']);
         $pub = Publisher::firstOrCreate(['name'=>'MegaPublisher']);
 
@@ -46,7 +35,5 @@ class DatabaseSeeder extends Seeder
             'average_rating' => 0
         ]);
 
-        $game->genres()->sync([$genre1->id, $genre2->id]);
-        $game->platforms()->sync([$plat1->id, $plat2->id]);
     }
 }

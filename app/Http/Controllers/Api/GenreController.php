@@ -1,64 +1,92 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Genre;
-
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+/**
+ * @OA\Tag(name="Genres", description="Gestión de géneros de videojuegos")
+ */
 class GenreController extends Controller
 {
     /**
-     * GET /api/genres
-     * RUTA PÚBLICA
+     * @OA\Get(
+     *     path="/api/genres",
+     *     summary="Listar todos los géneros",
+     *     tags={"Genres"},
+     *     @OA\Response(response=200, description="Lista de géneros", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Genre")))
+     * )
      */
-    public function index()
-    {
-        return response()->json(Genre::orderBy('name')->get(), 200);
-    }
+    public function index() { return response()->json(Genre::all()); }
 
     /**
-     * GET /api/genres/{genre}
-     */
-    public function show(Genre $genre)
-    {
-        return response()->json($genre, 200);
-    }
-
-    /**
-     * POST /api/genres
-     * SOLO ADMIN (protegido por middleware role:admin)
+     * @OA\Post(
+     *     path="/api/genres",
+     *     summary="Crear un nuevo género",
+     *     tags={"Genres"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Genre")),
+     *     @OA\Response(response=201, description="Género creado", @OA\JsonContent(ref="#/components/schemas/Genre"))
+     * )
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:genres,name|max:100'
-        ]);
-
-        $genre = Genre::create($request->only('name'));
+        $validated = $request->validate(['name' => 'required|string|max:255', 'description' => 'nullable|string']);
+        $genre = Genre::create($validated);
         return response()->json($genre, 201);
     }
 
     /**
-     * PUT /api/genres/{genre}
-     * SOLO ADMIN
+     * @OA\Get(
+     *     path="/api/genres/{id}",
+     *     summary="Obtener un género",
+     *     tags={"Genres"},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Género encontrado", @OA\JsonContent(ref="#/components/schemas/Genre")),
+     *     @OA\Response(response=404, description="No encontrado")
+     * )
      */
-    public function update(Request $request, Genre $genre)
+    public function show($id)
     {
-        $request->validate([
-            'name' => 'required|string|max:100|unique:genres,name,' . $genre->id
-        ]);
-
-        $genre->update($request->only('name'));
-        return response()->json($genre, 200);
+        $genre = Genre::find($id);
+        return $genre ? response()->json($genre) : response()->json(['message' => 'Not found'], 404);
     }
 
     /**
-     * DELETE /api/genres/{genre}
-     * SOLO ADMIN
+     * @OA\Put(
+     *     path="/api/genres/{id}",
+     *     summary="Actualizar un género",
+     *     tags={"Genres"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Genre")),
+     *     @OA\Response(response=200, description="Actualizado correctamente", @OA\JsonContent(ref="#/components/schemas/Genre"))
+     * )
      */
-    public function destroy(Genre $genre)
+    public function update(Request $request, $id)
     {
+        $genre = Genre::find($id);
+        if (!$genre) return response()->json(['message' => 'Not found'], 404);
+        $genre->update($request->all());
+        return response()->json($genre);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/genres/{id}",
+     *     summary="Eliminar un género",
+     *     tags={"Genres"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Eliminado correctamente")
+     * )
+     */
+    public function destroy($id)
+    {
+        $genre = Genre::find($id);
+        if (!$genre) return response()->json(['message' => 'Not found'], 404);
         $genre->delete();
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }

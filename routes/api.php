@@ -39,8 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // User actions
     Route::post('games/{game}/reviews', [ReviewController::class, 'store']);
     Route::delete('reviews/{review}', [ReviewController::class, 'destroy']);
-    Route::post('purchases', [PurchaseController::class, 'store']);
-    Route::get('my/purchases', [PurchaseController::class, 'index']);
+
 
     // Admin routes (require role:admin middleware)
 
@@ -50,5 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('platforms', PlatformController::class)->except(['index']);
         Route::apiResource('developers', DeveloperController::class)->except(['index']);
         Route::apiResource('publishers', PublisherController::class)->except(['index']);
+        Route::post('purchases', [PurchaseController::class, 'store']);
+        Route::get('my/purchases', [PurchaseController::class, 'index']);
     });
 });

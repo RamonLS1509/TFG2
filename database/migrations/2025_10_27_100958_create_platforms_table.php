@@ -13,12 +13,6 @@ class CreatePlatformsTable extends Migration
             $table->timestamps();
         });
 
-        Schema::create('game_platform', function(Blueprint $table){
-            $table->id();
-            $table->foreignId('game_id')->constrained('games')->cascadeOnDelete();
-            $table->foreignId('platform_id')->constrained('platforms')->cascadeOnDelete();
-            $table->unique(['game_id','platform_id']);
-        });
     }
 
     public function down()
