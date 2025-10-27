@@ -1,0 +1,19 @@
+<?php
+namespace App\Http\Requests;
+use Illuminate\Foundation\Http\FormRequest;
+
+class StorePurchaseRequest extends FormRequest
+{
+    public function authorize()
+    {
+        return $this->user() != null;
+    }
+
+    public function rules()
+    {
+        return [
+            'game_id' => 'required|exists:games,id',
+            'price' => 'required|numeric|min:0',
+        ];
+    }
+}
