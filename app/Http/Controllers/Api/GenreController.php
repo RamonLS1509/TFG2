@@ -1,64 +1,188 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Genre;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
+/**
+ * @OA\Tag(
+ *     name="Genres",
+ *     description="Gestión de géneros de videojuegos"
+ * )
+ */
 class GenreController extends Controller
 {
     /**
-     * GET /api/genres
-     * RUTA PÚBLICA
+     * @OA\Get(
+     *     path="/api/genres",
+     *     summary="Listar todos los géneros",
+     *     description="Devuelve una lista completa de los géneros de videojuegos registrados.",
+     *     tags={"Genres"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de géneros obtenida correctamente",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Genre"))
+     *     )
+     * )
      */
     public function index()
     {
-        return response()->json(Genre::orderBy('name')->get(), 200);
+        return response()->json(Genre::all());
     }
 
     /**
-     * GET /api/genres/{genre}
-     */
-    public function show(Genre $genre)
-    {
-        return response()->json($genre, 200);
-    }
-
-    /**
-     * POST /api/genres
-     * SOLO ADMIN (protegido por middleware role:admin)
+     * @OA\Post(
+     *     path="/api/genres",
+     *     summary="Crear un nuevo género",
+     *     description="Crea un nuevo registro de género de videojuego en la base de datos.",
+     *     tags={"Genres"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Acción"),
+     *             @OA\Property(property="description", type="string", example="Juegos enfocados en la acción y reflejos del jugador.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Género creado correctamente",
+     *         @OA\JsonContent(ref="#/components/schemas/Genre")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación en los datos enviados"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token no válido o usuario no autenticado"
+     *     )
+     * )
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:genres,name|max:100'
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string'
         ]);
 
-        $genre = Genre::create($request->only('name'));
+        $genre = Genre::create($validated);
         return response()->json($genre, 201);
     }
 
     /**
-     * PUT /api/genres/{genre}
-     * SOLO ADMIN
+     * @OA\Get(
+     *     path="/api/genres/{id}",
+     *     summary="Obtener un género específico",
+     *     description="Devuelve la información detallada de un género de videojuego mediante su ID.",
+     *     tags={"Genres"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del género",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Género encontrado",
+     *         @OA\JsonContent(ref="#/components/schemas/Genre")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Género no encontrado"
+     *     )
+     * )
      */
-    public function update(Request $request, Genre $genre)
+    public function show($id)
     {
-        $request->validate([
-            'name' => 'required|string|max:100|unique:genres,name,' . $genre->id
-        ]);
-
-        $genre->update($request->only('name'));
-        return response()->json($genre, 200);
+        $genre = Genre::find($id);
+        return $genre
+            ? response()->json($genre)
+            : response()->json(['message' => 'Not found'], 404);
     }
 
     /**
-     * DELETE /api/genres/{genre}
-     * SOLO ADMIN
+     * @OA\Put(
+     *     path="/api/genres/{id}",
+     *     summary="Actualizar un género existente",
+     *     description="Actualiza los datos de un género de videojuego existente.",
+     *     tags={"Genres"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del género a actualizar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="Aventura"),
+     *             @OA\Property(property="description", type="string", example="Género centrado en la exploración y narrativa.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Género actualizado correctamente",
+     *         @OA\JsonContent(ref="#/components/schemas/Genre")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Género no encontrado"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token no válido o usuario no autenticado"
+     *     )
+     * )
      */
-    public function destroy(Genre $genre)
+    public function update(Request $request, $id)
     {
+        $genre = Genre::find($id);
+        if (!$genre) return response()->json(['message' => 'Not found'], 404);
+
+        $genre->update($request->all());
+        return response()->json($genre);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/genres/{id}",
+     *     summary="Eliminar un género",
+     *     description="Elimina un género de videojuego del sistema mediante su ID.",
+     *     tags={"Genres"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del género a eliminar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=204,
+     *         description="Género eliminado correctamente (sin contenido)"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Género no encontrado"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token no válido o usuario no autenticado"
+     *     )
+     * )
+     */
+    public function destroy($id)
+    {
+        $genre = Genre::find($id);
+        if (!$genre) return response()->json(['message' => 'Not found'], 404);
+
         $genre->delete();
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }

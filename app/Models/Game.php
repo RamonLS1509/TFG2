@@ -4,7 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Game extends Model
 {
-    protected $fillable = ['title','slug','developer_id','publisher_id','release_date','price','description','average_rating'];
+    protected $fillable = ['title','slug','developer_id','publisher_id','genre_id','platform_id','release_date','price','description'];
 
     public function developer() { return $this->belongsTo(Developer::class); }
     public function publisher() { return $this->belongsTo(Publisher::class); }

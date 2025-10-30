@@ -12,7 +12,6 @@ class CreatePurchasesTable extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('game_id')->constrained('games')->cascadeOnDelete();
             $table->decimal('price',8,2)->default(0);
-            $table->timestamp('purchased_at');
             $table->timestamps();
             $table->unique(['user_id','game_id']);
         });
