@@ -11,12 +11,13 @@ class CreateGamesTable extends Migration
             $table->id();
             $table->string('title');
             $table->string('slug')->unique();
-            $table->foreignId('developer_id')->nullable()->constrained('developers')->nullOnDelete();
-            $table->foreignId('publisher_id')->nullable()->constrained('publishers')->nullOnDelete();
+            $table->foreignId('developer_id')->nullable()->constrained('developers')->cascadeOnDelete();
+            $table->foreignId('publisher_id')->nullable()->constrained('publishers')->cascadeOnDelete();
+            $table->foreignId('genre_id')->nullable()->constrained('genres')->cascadeOnDelete();
+            $table->foreignId('platform_id')->nullable()->constrained('platforms')->cascadeOnDelete();
             $table->date('release_date')->nullable();
             $table->decimal('price', 8, 2)->default(0);
             $table->text('description')->nullable();
-            $table->float('average_rating')->default(0); // recalculado por lógica de negocio
             $table->timestamps();
         });
     }

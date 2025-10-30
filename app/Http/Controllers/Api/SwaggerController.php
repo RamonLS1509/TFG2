@@ -43,6 +43,7 @@ namespace App\Http\Controllers\Api;
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="John Doe"),
  *     @OA\Property(property="email", type="string", example="john@example.com"),
+ *     @OA\Property(property="password", type="string", example="password1234"),
  *     @OA\Property(property="role", type="string", example="admin"),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
@@ -53,8 +54,7 @@ namespace App\Http\Controllers\Api;
  *     title="Genre",
  *     description="Género de videojuego",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Acción"),
- *     @OA\Property(property="description", type="string", example="Juegos con enfoque en el combate.")
+ *     @OA\Property(property="name", type="string", example="Acción")
  * ),
  *
  * @OA\Schema(
@@ -62,8 +62,7 @@ namespace App\Http\Controllers\Api;
  *     title="Platform",
  *     description="Plataforma de videojuego",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="PlayStation 5"),
- *     @OA\Property(property="manufacturer", type="string", example="Sony")
+ *     @OA\Property(property="name", type="string", example="PlayStation 5")
  * ),
  *
  * @OA\Schema(
@@ -72,7 +71,8 @@ namespace App\Http\Controllers\Api;
  *     description="Desarrollador de videojuegos",
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="Naughty Dog"),
- *     @OA\Property(property="country", type="string", example="USA")
+ *     @OA\Property(property="bio", type="string", example="Estudio de desarrollo de videojuegos conocido por las sagas Uncharted"),
+ *     @OA\Property(property="website", type="string", example="https://www.naughtydog.com")
  * ),
  *
  * @OA\Schema(
@@ -80,8 +80,7 @@ namespace App\Http\Controllers\Api;
  *     title="Publisher",
  *     description="Editor o distribuidor de videojuegos",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Sony Interactive Entertainment"),
- *     @OA\Property(property="country", type="string", example="USA")
+ *     @OA\Property(property="name", type="string", example="Sony Interactive Entertainment")
  * ),
  *
  * @OA\Schema(
@@ -89,13 +88,15 @@ namespace App\Http\Controllers\Api;
  *     title="Game",
  *     description="Videojuego",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="title", type="string", example="The Last of Us Part II"),
- *     @OA\Property(property="description", type="string", example="Juego de acción y aventura post-apocalíptico."),
- *     @OA\Property(property="release_date", type="string", format="date", example="2020-06-19"),
- *     @OA\Property(property="genre_id", type="integer", example=2),
- *     @OA\Property(property="platform_id", type="integer", example=1),
+ *     @OA\Property(property="title", type="string", example="Kingdom Hearts"),
+ *     @OA\Property(property="slug", type="string", example="Kingdom-Hearts"),
  *     @OA\Property(property="developer_id", type="integer", example=3),
  *     @OA\Property(property="publisher_id", type="integer", example=4),
+ *     @OA\Property(property="genre_id", type="integer", example=2),
+ *     @OA\Property(property="platform_id", type="integer", example=1),
+ *     @OA\Property(property="release_date", type="string", format="date", example="2020-06-19"),
+ *     @OA\Property(property="price", type="decimal", example="39.99"),
+ *     @OA\Property(property="description", type="string", example="Juego de acción y aventura post-apocalíptico."),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * ),
@@ -120,7 +121,7 @@ namespace App\Http\Controllers\Api;
  *     @OA\Property(property="id", type="integer", example=15),
  *     @OA\Property(property="user_id", type="integer", example=3),
  *     @OA\Property(property="game_id", type="integer", example=8),
- *     @OA\Property(property="quantity", type="integer", example=1),
+ *     @OA\Property(property="price", type="double", example=39.99),
  *     @OA\Property(property="total_price", type="number", format="float", example=59.99),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")

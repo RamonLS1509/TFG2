@@ -11,10 +11,10 @@ class CreateReviewsTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('game_id')->constrained('games')->cascadeOnDelete();
-            $table->tinyInteger('rating'); // 1..5
+            $table->tinyInteger('rating');
             $table->text('comment')->nullable();
             $table->timestamps();
-            $table->unique(['user_id','game_id']); // 1 reseña por usuario por juego
+            $table->unique(['user_id','game_id']);
         });
     }
 

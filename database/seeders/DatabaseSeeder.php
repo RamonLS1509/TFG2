@@ -2,14 +2,12 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Role;
-use App\Models\User;
+
 use App\Models\Developer;
 use App\Models\Publisher;
 use App\Models\Platform;
 use App\Models\Genre;
 use App\Models\Game;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,21 +16,19 @@ class DatabaseSeeder extends Seeder
 
         $dev = Developer::firstOrCreate(['name'=>'SuperDev Studios']);
         $pub = Publisher::firstOrCreate(['name'=>'MegaPublisher']);
+        $gen = Genre::firstOrCreate(['name'=>'Action'],['name'=>'RPG']);
+        $plat = Platform::firstOrCreate(['name'=>'PC'],['name'=>'Playstation 5']);
 
-        $genre1 = Genre::firstOrCreate(['name'=>'Action']);
-        $genre2 = Genre::firstOrCreate(['name'=>'RPG']);
-
-        $plat1 = Platform::firstOrCreate(['name'=>'PC']);
-        $plat2 = Platform::firstOrCreate(['name'=>'PlayStation 5']);
-
-        $game = Game::firstOrCreate(['slug'=>'epic-quest'], [
+        Game::firstOrCreate([
             'title'=>'Epic Quest',
+            'slug'=>'epic-quest',
             'developer_id' => $dev->id,
             'publisher_id' => $pub->id,
+            'genre_id' =>$gen->id,
+            'platform_id' =>$plat->id,
             'release_date' => '2024-09-01',
             'price' => 39.99,
-            'description' => 'A great adventure game',
-            'average_rating' => 0
+            'description' => 'A great adventure game'
         ]);
 
     }

@@ -22,8 +22,8 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Registrar un nuevo usuario",
-                "description": "Permite crear un nuevo usuario en la aplicación",
+                "summary": "Registro de un nuevo usuario",
+                "description": "Permite registrar un nuevo usuario en el sistema. El primer usuario creado tendrá rol de 'admin'.",
                 "operationId": "8e4e3cb7b46126f4696379d3c7eeb4ad",
                 "requestBody": {
                     "required": true,
@@ -33,21 +33,25 @@
                                 "required": [
                                     "name",
                                     "email",
-                                    "password"
+                                    "password",
+                                    "password_confirmation"
                                 ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "Juan Pérez"
+                                        "example": "John Doe"
                                     },
                                     "email": {
                                         "type": "string",
-                                        "format": "email",
-                                        "example": "juan@example.com"
+                                        "example": "john@example.com"
                                     },
                                     "password": {
                                         "type": "string",
-                                        "example": "12345678"
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "password123"
                                     }
                                 },
                                 "type": "object"
@@ -57,10 +61,30 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Usuario registrado correctamente"
+                        "description": "Usuario registrado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User registered successfully"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|xYZAbCdEfG123456"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Error de validación"
+                        "description": "Datos inválidos o email duplicado"
                     }
                 }
             }
@@ -70,8 +94,8 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Iniciar sesión",
-                "description": "Genera un token de autenticación JWT para el usuario",
+                "summary": "Inicio de sesión",
+                "description": "Permite a un usuario autenticarse con su correo y contraseña. Devuelve un token JWT.",
                 "operationId": "222b2625838e3c57e017987f73598fda",
                 "requestBody": {
                     "required": true,
@@ -85,12 +109,11 @@
                                 "properties": {
                                     "email": {
                                         "type": "string",
-                                        "format": "email",
-                                        "example": "juan@example.com"
+                                        "example": "john@example.com"
                                     },
                                     "password": {
                                         "type": "string",
-                                        "example": "12345678"
+                                        "example": "password123"
                                     }
                                 },
                                 "type": "object"
@@ -106,15 +129,12 @@
                                 "schema": {
                                     "properties": {
                                         "access_token": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "1|xYZAbCdEfG123456"
                                         },
                                         "token_type": {
                                             "type": "string",
                                             "example": "bearer"
-                                        },
-                                        "expires_in": {
-                                            "type": "integer",
-                                            "example": 3600
                                         }
                                     },
                                     "type": "object"
@@ -134,11 +154,11 @@
                     "Auth"
                 ],
                 "summary": "Obtener perfil del usuario autenticado",
-                "description": "Devuelve la información del usuario autenticado",
+                "description": "Devuelve la información del usuario autenticado a través del token JWT.",
                 "operationId": "94a5f4c5f5e5755cf43698cf9bc49e9d",
                 "responses": {
                     "200": {
-                        "description": "Perfil del usuario",
+                        "description": "Perfil del usuario autenticado",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -148,7 +168,7 @@
                         }
                     },
                     "401": {
-                        "description": "No autenticado"
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -164,37 +184,27 @@
                     "Auth"
                 ],
                 "summary": "Cerrar sesión",
-                "description": "Revoca el token del usuario actual",
+                "description": "Revoca el token de acceso actual del usuario autenticado.",
                 "operationId": "ad65cbbd4e9f201619eae184a5961a98",
                 "responses": {
                     "200": {
-                        "description": "Cierre de sesión exitoso"
+                        "description": "Sesión cerrada correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sesión cerrada correctamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "No autenticado"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/refresh": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Refrescar el token JWT (opcional)",
-                "description": "Devuelve un nuevo token de acceso si usas JWT (no necesario con Sanctum)",
-                "operationId": "f6409cd8d794404a6410b0767432b0f4",
-                "responses": {
-                    "200": {
-                        "description": "Token actualizado"
-                    },
-                    "401": {
-                        "description": "No autenticado"
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -210,6 +220,7 @@
                     "Developers"
                 ],
                 "summary": "Listar todos los desarrolladores",
+                "description": "Devuelve un listado completo de los desarrolladores registrados en el sistema.",
                 "operationId": "8b48afac27e158ba88fe53b027c63e2d",
                 "responses": {
                     "200": {
@@ -232,20 +243,38 @@
                     "Developers"
                 ],
                 "summary": "Crear un nuevo desarrollador",
+                "description": "Crea un nuevo registro de desarrollador de videojuegos.",
                 "operationId": "48b45516935c11244a5ed97643bc4f13",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Developer"
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Naughty Dog"
+                                    },
+                                    "bio": {
+                                        "type": "string",
+                                        "example": "Estudio californiano especializado en acción y aventura."
+                                    },
+                                    "website": {
+                                        "type": "string",
+                                        "example": "https://www.naughtydog.com"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Desarrollador creado",
+                        "description": "Desarrollador creado correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -253,6 +282,12 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Error de validación en los datos enviados"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -267,15 +302,18 @@
                 "tags": [
                     "Developers"
                 ],
-                "summary": "Obtener un desarrollador",
+                "summary": "Mostrar un desarrollador específico",
+                "description": "Obtiene la información de un desarrollador por su ID.",
                 "operationId": "2914753d779ce0af118664037b37ffb0",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del desarrollador",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -291,7 +329,7 @@
                         }
                     },
                     "404": {
-                        "description": "No encontrado"
+                        "description": "Desarrollador no encontrado"
                     }
                 }
             },
@@ -299,31 +337,47 @@
                 "tags": [
                     "Developers"
                 ],
-                "summary": "Actualizar un desarrollador",
+                "summary": "Actualizar un desarrollador existente",
+                "description": "Actualiza los datos de un desarrollador ya registrado.",
                 "operationId": "0dacd47ff4329914e059a7ec41f08188",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del desarrollador a actualizar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Developer"
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Square Enix"
+                                    },
+                                    "bio": {
+                                        "type": "string",
+                                        "example": "Estudio japonés de videojuegos"
+                                    },
+                                    "website": {
+                                        "type": "string",
+                                        "example": "https://www.square-enix.com"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Desarrollador actualizado",
+                        "description": "Desarrollador actualizado correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -331,6 +385,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Desarrollador no encontrado"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -344,20 +404,29 @@
                     "Developers"
                 ],
                 "summary": "Eliminar un desarrollador",
+                "description": "Elimina un desarrollador del sistema por su ID.",
                 "operationId": "2d1508b594e88ed82f1387cb482d13ab",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del desarrollador a eliminar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Eliminado correctamente"
+                        "description": "Desarrollador eliminado correctamente (sin contenido)"
+                    },
+                    "404": {
+                        "description": "Desarrollador no encontrado"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -373,6 +442,7 @@
                     "Games"
                 ],
                 "summary": "Listar todos los videojuegos",
+                "description": "Obtiene un listado completo de todos los videojuegos registrados.",
                 "operationId": "e333e2e46e6c7bd4c254fe379b7389dd",
                 "responses": {
                     "200": {
@@ -395,20 +465,72 @@
                     "Games"
                 ],
                 "summary": "Crear un nuevo videojuego",
+                "description": "Crea un nuevo registro de videojuego en la base de datos.",
                 "operationId": "496a1db2ab2b344c40cad9e98d332d9e",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Game"
+                                "required": [
+                                    "title",
+                                    "slug",
+                                    "developer_id",
+                                    "publisher_id",
+                                    "genre_id",
+                                    "platform_id",
+                                    "release_date",
+                                    "price",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Kingdom Hearts"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "kingdom-hearts"
+                                    },
+                                    "developer_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "publisher_id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "genre_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "platform_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "release_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2020-06-19"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 39.99
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Juego de acción y aventura con historia envolvente."
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Videojuego creado",
+                        "description": "Videojuego creado correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -416,6 +538,12 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Error de validación en los datos enviados"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -430,7 +558,8 @@
                 "tags": [
                     "Games"
                 ],
-                "summary": "Obtener detalles de un videojuego",
+                "summary": "Obtener un videojuego por ID",
+                "description": "Devuelve la información de un videojuego específico mediante su ID.",
                 "operationId": "48fb06317bf9e8f10c22dd892ff7425e",
                 "parameters": [
                     {
@@ -439,13 +568,14 @@
                         "description": "ID del videojuego",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detalles del videojuego",
+                        "description": "Videojuego encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -463,32 +593,52 @@
                 "tags": [
                     "Games"
                 ],
-                "summary": "Actualizar un videojuego",
+                "summary": "Actualizar un videojuego existente",
+                "description": "Actualiza los datos de un videojuego ya existente en la base de datos.",
                 "operationId": "273f111abbd78231f5f9c48d4fca792c",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID del videojuego",
+                        "description": "ID del videojuego a actualizar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Game"
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Kingdom Hearts II"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "kingdom-hearts-2"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 49.99
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Secuela del aclamado RPG de acción."
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Videojuego actualizado",
+                        "description": "Videojuego actualizado correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -499,6 +649,9 @@
                     },
                     "404": {
                         "description": "Videojuego no encontrado"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -512,24 +665,29 @@
                     "Games"
                 ],
                 "summary": "Eliminar un videojuego",
+                "description": "Elimina un videojuego del sistema por su ID.",
                 "operationId": "c5bffb910bb1804bac14c04327dad425",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID del videojuego",
+                        "description": "ID del videojuego a eliminar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Eliminado correctamente"
+                        "description": "Videojuego eliminado correctamente (sin contenido)"
                     },
                     "404": {
                         "description": "Videojuego no encontrado"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -545,10 +703,11 @@
                     "Genres"
                 ],
                 "summary": "Listar todos los géneros",
+                "description": "Devuelve una lista completa de los géneros de videojuegos registrados.",
                 "operationId": "0ff78353b1c27ef8905e58f3cf31370a",
                 "responses": {
                     "200": {
-                        "description": "Lista de géneros",
+                        "description": "Lista de géneros obtenida correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -567,20 +726,34 @@
                     "Genres"
                 ],
                 "summary": "Crear un nuevo género",
+                "description": "Crea un nuevo registro de género de videojuego en la base de datos.",
                 "operationId": "8d21057e41193b21373f4e2cce0a8c73",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Genre"
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Acción"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Juegos enfocados en la acción y reflejos del jugador."
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Género creado",
+                        "description": "Género creado correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -588,6 +761,12 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Error de validación en los datos enviados"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -602,15 +781,18 @@
                 "tags": [
                     "Genres"
                 ],
-                "summary": "Obtener un género",
+                "summary": "Obtener un género específico",
+                "description": "Devuelve la información detallada de un género de videojuego mediante su ID.",
                 "operationId": "cec9d00fae56cff69cba705f6b436983",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del género",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -626,7 +808,7 @@
                         }
                     },
                     "404": {
-                        "description": "No encontrado"
+                        "description": "Género no encontrado"
                     }
                 }
             },
@@ -634,31 +816,43 @@
                 "tags": [
                     "Genres"
                 ],
-                "summary": "Actualizar un género",
+                "summary": "Actualizar un género existente",
+                "description": "Actualiza los datos de un género de videojuego existente.",
                 "operationId": "9ec4944f7fd50bd7280fb1366c748709",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del género a actualizar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Genre"
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Aventura"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Género centrado en la exploración y narrativa."
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Actualizado correctamente",
+                        "description": "Género actualizado correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -666,6 +860,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Género no encontrado"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -679,20 +879,29 @@
                     "Genres"
                 ],
                 "summary": "Eliminar un género",
+                "description": "Elimina un género de videojuego del sistema mediante su ID.",
                 "operationId": "1890f1018746d6e4385aa0c3244acc08",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del género a eliminar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Eliminado correctamente"
+                        "description": "Género eliminado correctamente (sin contenido)"
+                    },
+                    "404": {
+                        "description": "Género no encontrado"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -708,10 +917,11 @@
                     "Platforms"
                 ],
                 "summary": "Listar todas las plataformas",
+                "description": "Devuelve una lista completa de las plataformas de videojuegos registradas.",
                 "operationId": "b79ea4224ff39ae923cc8756fa1bf671",
                 "responses": {
                     "200": {
-                        "description": "Lista de plataformas",
+                        "description": "Lista de plataformas obtenida correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -730,20 +940,30 @@
                     "Platforms"
                 ],
                 "summary": "Crear una nueva plataforma",
+                "description": "Crea una nueva plataforma de videojuegos.",
                 "operationId": "057364b51fcd5d4e282c22cbc0e92eaf",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Platform"
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "PlayStation 5"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Plataforma creada",
+                        "description": "Plataforma creada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -751,6 +971,12 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Error de validación en los datos enviados"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -765,15 +991,18 @@
                 "tags": [
                     "Platforms"
                 ],
-                "summary": "Obtener detalles de una plataforma",
+                "summary": "Obtener una plataforma específica",
+                "description": "Devuelve los detalles de una plataforma de videojuegos mediante su ID.",
                 "operationId": "3deec4f1d4d2c00065c8ec17fd57a93b",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la plataforma",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -789,7 +1018,7 @@
                         }
                     },
                     "404": {
-                        "description": "No encontrada"
+                        "description": "Plataforma no encontrada"
                     }
                 }
             },
@@ -797,31 +1026,39 @@
                 "tags": [
                     "Platforms"
                 ],
-                "summary": "Actualizar una plataforma",
+                "summary": "Actualizar una plataforma existente",
+                "description": "Actualiza los datos de una plataforma de videojuegos.",
                 "operationId": "4d11c4ec68257f86e884985341d6f516",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la plataforma a actualizar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Platform"
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Xbox Series X"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Plataforma actualizada",
+                        "description": "Plataforma actualizada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -829,6 +1066,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Plataforma no encontrada"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -842,20 +1085,29 @@
                     "Platforms"
                 ],
                 "summary": "Eliminar una plataforma",
+                "description": "Elimina una plataforma de videojuegos mediante su ID.",
                 "operationId": "4e4d8de139b615a76288e770f777e4c9",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la plataforma a eliminar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Eliminado correctamente"
+                        "description": "Plataforma eliminada correctamente (sin contenido)"
+                    },
+                    "404": {
+                        "description": "Plataforma no encontrada"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -870,11 +1122,12 @@
                 "tags": [
                     "Publishers"
                 ],
-                "summary": "Listar todos los editores",
+                "summary": "Listar todos los editores/distribuidores",
+                "description": "Obtiene la lista completa de editores o distribuidores de videojuegos registrados.",
                 "operationId": "9a0fdd4383afd0c4b7d0c0920a9e2d09",
                 "responses": {
                     "200": {
-                        "description": "Lista de editores",
+                        "description": "Lista de editores obtenida correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -892,21 +1145,39 @@
                 "tags": [
                     "Publishers"
                 ],
-                "summary": "Crear un nuevo editor",
+                "summary": "Crear un nuevo editor/distribuidor",
+                "description": "Crea un nuevo registro de editor o distribuidor de videojuegos.",
                 "operationId": "c3d281ee2ed8ec68f724ca9ffb658b8e",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Publisher"
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Sony Interactive Entertainment"
+                                    },
+                                    "info": {
+                                        "type": "string",
+                                        "example": "División de entretenimiento digital de Sony."
+                                    },
+                                    "website": {
+                                        "type": "string",
+                                        "example": "https://www.sie.com"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Editor creado",
+                        "description": "Editor/distribuidor creado correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -914,6 +1185,12 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Error de validación en los datos enviados"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -928,21 +1205,24 @@
                 "tags": [
                     "Publishers"
                 ],
-                "summary": "Obtener un editor",
+                "summary": "Obtener un editor/distribuidor específico",
+                "description": "Devuelve los detalles de un editor o distribuidor de videojuegos por su ID.",
                 "operationId": "ae45ae012b4a2309ec4fb29672f3db1c",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del editor/distribuidor",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Editor encontrado",
+                        "description": "Editor/distribuidor encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -952,7 +1232,7 @@
                         }
                     },
                     "404": {
-                        "description": "No encontrado"
+                        "description": "Editor/distribuidor no encontrado"
                     }
                 }
             },
@@ -960,31 +1240,47 @@
                 "tags": [
                     "Publishers"
                 ],
-                "summary": "Actualizar un editor",
+                "summary": "Actualizar un editor/distribuidor",
+                "description": "Actualiza los datos de un editor o distribuidor de videojuegos existente.",
                 "operationId": "7271f0419620ecbd4d293ba3943bf80d",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del editor/distribuidor a actualizar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Publisher"
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ubisoft Entertainment"
+                                    },
+                                    "info": {
+                                        "type": "string",
+                                        "example": "Compañía francesa de desarrollo y distribución de videojuegos."
+                                    },
+                                    "website": {
+                                        "type": "string",
+                                        "example": "https://www.ubisoft.com"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Editor actualizado",
+                        "description": "Editor/distribuidor actualizado correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -992,6 +1288,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Editor/distribuidor no encontrado"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1004,21 +1306,30 @@
                 "tags": [
                     "Publishers"
                 ],
-                "summary": "Eliminar un editor",
+                "summary": "Eliminar un editor/distribuidor",
+                "description": "Elimina un editor o distribuidor de videojuegos de la base de datos.",
                 "operationId": "a7b6cb84d66d2637167a22db043213c2",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del editor/distribuidor a eliminar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Eliminado correctamente"
+                        "description": "Editor/distribuidor eliminado correctamente (sin contenido)"
+                    },
+                    "404": {
+                        "description": "Editor/distribuidor no encontrado"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1033,11 +1344,12 @@
                 "tags": [
                     "Purchases"
                 ],
-                "summary": "Listar todas las compras",
+                "summary": "Listar compras del usuario autenticado",
+                "description": "Devuelve todas las compras asociadas al usuario autenticado. Incluye información del videojuego relacionado.",
                 "operationId": "f9e4d207618ed5d420eacbf76284cb61",
                 "responses": {
                     "200": {
-                        "description": "Lista de compras",
+                        "description": "Lista de compras obtenida correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1048,6 +1360,9 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1061,6 +1376,7 @@
                     "Purchases"
                 ],
                 "summary": "Registrar una nueva compra",
+                "description": "Permite registrar una nueva compra de un videojuego realizada por un usuario.",
                 "operationId": "922a81d8425c9994dd7983b5e2606e13",
                 "requestBody": {
                     "required": true,
@@ -1070,26 +1386,24 @@
                                 "required": [
                                     "user_id",
                                     "game_id",
-                                    "quantity",
-                                    "total_price"
+                                    "price"
                                 ],
                                 "properties": {
                                     "user_id": {
+                                        "description": "ID del usuario que realiza la compra",
                                         "type": "integer",
-                                        "example": 1
+                                        "example": 3
                                     },
                                     "game_id": {
+                                        "description": "ID del videojuego comprado",
                                         "type": "integer",
-                                        "example": 2
+                                        "example": 8
                                     },
-                                    "quantity": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "total_price": {
+                                    "price": {
+                                        "description": "Precio del videojuego al momento de la compra",
                                         "type": "number",
                                         "format": "float",
-                                        "example": 59.99
+                                        "example": 39.99
                                     }
                                 },
                                 "type": "object"
@@ -1099,7 +1413,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Compra registrada",
+                        "description": "Compra registrada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1107,6 +1421,12 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Error de validación en los datos enviados"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1121,21 +1441,24 @@
                 "tags": [
                     "Purchases"
                 ],
-                "summary": "Obtener detalles de una compra",
+                "summary": "Obtener una compra específica",
+                "description": "Devuelve los detalles de una compra mediante su ID.",
                 "operationId": "4588f334d937e54d3963c9146182ab60",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la compra",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 10
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Compra encontrada",
+                        "description": "Compra encontrada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1145,7 +1468,10 @@
                         }
                     },
                     "404": {
-                        "description": "No encontrada"
+                        "description": "Compra no encontrada"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1158,32 +1484,30 @@
                 "tags": [
                     "Purchases"
                 ],
-                "summary": "Actualizar una compra",
+                "summary": "Actualizar el precio de una compra",
+                "description": "Permite modificar el precio registrado en una compra existente.",
                 "operationId": "3e07a6bb6b2126ea3aeca28a492a75a4",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la compra a actualizar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 15
                         }
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "quantity": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "total_price": {
+                                    "price": {
                                         "type": "number",
                                         "format": "float",
-                                        "example": 119.98
+                                        "example": 59.99
                                     }
                                 },
                                 "type": "object"
@@ -1193,7 +1517,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Compra actualizada",
+                        "description": "Compra actualizada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1201,6 +1525,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Compra no encontrada"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1214,20 +1544,29 @@
                     "Purchases"
                 ],
                 "summary": "Eliminar una compra",
+                "description": "Elimina una compra registrada en el sistema mediante su ID.",
                 "operationId": "70aaae0cc28c9d86da41fef2015278ad",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la compra a eliminar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 15
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Eliminada correctamente"
+                        "description": "Compra eliminada correctamente (sin contenido)"
+                    },
+                    "404": {
+                        "description": "Compra no encontrada"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1243,10 +1582,11 @@
                     "Reviews"
                 ],
                 "summary": "Listar todas las reseñas",
+                "description": "Devuelve una lista completa de todas las reseñas y valoraciones realizadas por los usuarios.",
                 "operationId": "9cfedb9e60a10482ea2d0017aa8b381d",
                 "responses": {
                     "200": {
-                        "description": "Lista de reseñas",
+                        "description": "Lista de reseñas obtenida correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1265,6 +1605,7 @@
                     "Reviews"
                 ],
                 "summary": "Crear una nueva reseña",
+                "description": "Permite a un usuario crear una reseña para un videojuego, incluyendo una calificación numérica y un comentario.",
                 "operationId": "f9bf17f06508aa2dd6aecbb9771092da",
                 "requestBody": {
                     "required": true,
@@ -1279,18 +1620,26 @@
                                 ],
                                 "properties": {
                                     "user_id": {
-                                        "type": "integer"
-                                    },
-                                    "game_id": {
-                                        "type": "integer"
-                                    },
-                                    "rating": {
+                                        "description": "ID del usuario que realiza la reseña",
                                         "type": "integer",
                                         "example": 5
                                     },
+                                    "game_id": {
+                                        "description": "ID del videojuego reseñado",
+                                        "type": "integer",
+                                        "example": 12
+                                    },
+                                    "rating": {
+                                        "description": "Puntuación otorgada al videojuego",
+                                        "type": "integer",
+                                        "maximum": 10,
+                                        "minimum": 1,
+                                        "example": 8
+                                    },
                                     "comment": {
                                         "type": "string",
-                                        "example": "Excelente juego con una historia impresionante."
+                                        "maxLength": 1000,
+                                        "example": "Excelente juego con una historia muy envolvente."
                                     }
                                 },
                                 "type": "object"
@@ -1300,7 +1649,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Reseña creada",
+                        "description": "Reseña creada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1308,6 +1657,12 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Error de validación en los datos enviados"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1322,21 +1677,24 @@
                 "tags": [
                     "Reviews"
                 ],
-                "summary": "Obtener una reseña por ID",
+                "summary": "Obtener una reseña específica",
+                "description": "Devuelve los detalles de una reseña concreta, incluyendo la valoración y comentario.",
                 "operationId": "a3632d5bab2fddd21c3eadca9a4bd805",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la reseña",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 3
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Reseña encontrada",
+                        "description": "Reseña encontrada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1346,7 +1704,7 @@
                         }
                     },
                     "404": {
-                        "description": "No encontrada"
+                        "description": "Reseña no encontrada"
                     }
                 }
             },
@@ -1355,30 +1713,34 @@
                     "Reviews"
                 ],
                 "summary": "Actualizar una reseña",
+                "description": "Permite modificar la puntuación o el comentario de una reseña existente.",
                 "operationId": "0a0c13ce189613706937df58ee336079",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la reseña a actualizar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 7
                         }
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "properties": {
                                     "rating": {
                                         "type": "integer",
-                                        "example": 8
+                                        "maximum": 10,
+                                        "minimum": 1,
+                                        "example": 9
                                     },
                                     "comment": {
                                         "type": "string",
-                                        "example": "Buena jugabilidad pero historia débil."
+                                        "example": "Tras el parche, el rendimiento mejoró mucho."
                                     }
                                 },
                                 "type": "object"
@@ -1388,7 +1750,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Reseña actualizada",
+                        "description": "Reseña actualizada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1396,6 +1758,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Reseña no encontrada"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1409,20 +1777,29 @@
                     "Reviews"
                 ],
                 "summary": "Eliminar una reseña",
+                "description": "Permite eliminar una reseña del sistema mediante su ID.",
                 "operationId": "adc117e9be50413476f46036b7d20b76",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la reseña a eliminar",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 7
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Eliminada correctamente"
+                        "description": "Reseña eliminada correctamente (sin contenido)"
+                    },
+                    "404": {
+                        "description": "Reseña no encontrada"
+                    },
+                    "401": {
+                        "description": "Token no válido o usuario no autenticado"
                     }
                 },
                 "security": [
@@ -1451,6 +1828,10 @@
                         "type": "string",
                         "example": "john@example.com"
                     },
+                    "password": {
+                        "type": "string",
+                        "example": "password1234"
+                    },
                     "role": {
                         "type": "string",
                         "example": "admin"
@@ -1477,10 +1858,6 @@
                     "name": {
                         "type": "string",
                         "example": "Acción"
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "Juegos con enfoque en el combate."
                     }
                 },
                 "type": "object"
@@ -1496,10 +1873,6 @@
                     "name": {
                         "type": "string",
                         "example": "PlayStation 5"
-                    },
-                    "manufacturer": {
-                        "type": "string",
-                        "example": "Sony"
                     }
                 },
                 "type": "object"
@@ -1516,9 +1889,13 @@
                         "type": "string",
                         "example": "Naughty Dog"
                     },
-                    "country": {
+                    "bio": {
                         "type": "string",
-                        "example": "USA"
+                        "example": "Estudio de desarrollo de videojuegos conocido por las sagas Uncharted"
+                    },
+                    "website": {
+                        "type": "string",
+                        "example": "https://www.naughtydog.com"
                     }
                 },
                 "type": "object"
@@ -1534,10 +1911,6 @@
                     "name": {
                         "type": "string",
                         "example": "Sony Interactive Entertainment"
-                    },
-                    "country": {
-                        "type": "string",
-                        "example": "USA"
                     }
                 },
                 "type": "object"
@@ -1552,16 +1925,19 @@
                     },
                     "title": {
                         "type": "string",
-                        "example": "The Last of Us Part II"
+                        "example": "Kingdom Hearts"
                     },
-                    "description": {
+                    "slug": {
                         "type": "string",
-                        "example": "Juego de acción y aventura post-apocalíptico."
+                        "example": "Kingdom-Hearts"
                     },
-                    "release_date": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2020-06-19"
+                    "developer_id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "publisher_id": {
+                        "type": "integer",
+                        "example": 4
                     },
                     "genre_id": {
                         "type": "integer",
@@ -1571,13 +1947,18 @@
                         "type": "integer",
                         "example": 1
                     },
-                    "developer_id": {
-                        "type": "integer",
-                        "example": 3
+                    "release_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2020-06-19"
                     },
-                    "publisher_id": {
-                        "type": "integer",
-                        "example": 4
+                    "price": {
+                        "type": "decimal",
+                        "example": "39.99"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Juego de acción y aventura post-apocalíptico."
                     },
                     "created_at": {
                         "type": "string",
@@ -1641,9 +2022,10 @@
                         "type": "integer",
                         "example": 8
                     },
-                    "quantity": {
-                        "type": "integer",
-                        "example": 1
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 39.99
                     },
                     "total_price": {
                         "type": "number",
@@ -1693,7 +2075,7 @@
         },
         {
             "name": "Publishers",
-            "description": "Gestión de editores/distribuidores de videojuegos"
+            "description": "Gestión de editores o distribuidores de videojuegos"
         },
         {
             "name": "Purchases",
