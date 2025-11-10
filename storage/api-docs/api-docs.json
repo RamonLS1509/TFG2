@@ -1836,6 +1836,9 @@
                         "type": "string",
                         "example": "admin"
                     },
+                    "remember_token": {
+                        "type": "string"
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
@@ -1858,6 +1861,14 @@
                     "name": {
                         "type": "string",
                         "example": "Acción"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -1873,6 +1884,14 @@
                     "name": {
                         "type": "string",
                         "example": "PlayStation 5"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -1896,6 +1915,14 @@
                     "website": {
                         "type": "string",
                         "example": "https://www.naughtydog.com"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -1911,6 +1938,22 @@
                     "name": {
                         "type": "string",
                         "example": "Sony Interactive Entertainment"
+                    },
+                    "info": {
+                        "type": "string",
+                        "example": "Empresa desarrolladora de Hollow Knight"
+                    },
+                    "website": {
+                        "type": "string",
+                        "example": "https://teamcherry.com"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -2026,11 +2069,6 @@
                         "type": "number",
                         "format": "double",
                         "example": 39.99
-                    },
-                    "total_price": {
-                        "type": "number",
-                        "format": "float",
-                        "example": 59.99
                     },
                     "created_at": {
                         "type": "string",

@@ -45,6 +45,7 @@ namespace App\Http\Controllers\Api;
  *     @OA\Property(property="email", type="string", example="john@example.com"),
  *     @OA\Property(property="password", type="string", example="password1234"),
  *     @OA\Property(property="role", type="string", example="admin"),
+ *     @OA\Property(property="remember_token", type="string"),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * ),
@@ -54,7 +55,9 @@ namespace App\Http\Controllers\Api;
  *     title="Genre",
  *     description="Género de videojuego",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Acción")
+ *     @OA\Property(property="name", type="string", example="Acción"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
  * ),
  *
  * @OA\Schema(
@@ -62,7 +65,9 @@ namespace App\Http\Controllers\Api;
  *     title="Platform",
  *     description="Plataforma de videojuego",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="PlayStation 5")
+ *     @OA\Property(property="name", type="string", example="PlayStation 5"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
  * ),
  *
  * @OA\Schema(
@@ -72,7 +77,9 @@ namespace App\Http\Controllers\Api;
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="Naughty Dog"),
  *     @OA\Property(property="bio", type="string", example="Estudio de desarrollo de videojuegos conocido por las sagas Uncharted"),
- *     @OA\Property(property="website", type="string", example="https://www.naughtydog.com")
+ *     @OA\Property(property="website", type="string", example="https://www.naughtydog.com"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
  * ),
  *
  * @OA\Schema(
@@ -80,7 +87,11 @@ namespace App\Http\Controllers\Api;
  *     title="Publisher",
  *     description="Editor o distribuidor de videojuegos",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Sony Interactive Entertainment")
+ *     @OA\Property(property="name", type="string", example="Sony Interactive Entertainment"),
+ *     @OA\Property(property="info", type="string", example="Empresa desarrolladora de Hollow Knight"),
+ *     @OA\Property(property="website", type="string", example="https://teamcherry.com"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
  * ),
  *
  * @OA\Schema(
@@ -122,12 +133,11 @@ namespace App\Http\Controllers\Api;
  *     @OA\Property(property="user_id", type="integer", example=3),
  *     @OA\Property(property="game_id", type="integer", example=8),
  *     @OA\Property(property="price", type="double", example=39.99),
- *     @OA\Property(property="total_price", type="number", format="float", example=59.99),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
  */
 class SwaggerController
 {
-    // Este controlador no necesita métodos
+
 }
